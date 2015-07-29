@@ -151,10 +151,10 @@ def main():
 	y_test = df_test['label']
 
 	
-	# model = LogisticRegression()
-	trainAndEval(model=LogisticRegression(penalty='l2'), X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
+	# Train a L2-regularized LogisticRegression model and evaluate on test data.
+	trainAndEval(model=LogisticRegression(penalty='l2', C=1.0), X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
 	
-	# model = DecisionTreeClassifier(max_depth=10)
+	# Train a Decision Tree classifier and evaluate on test data.
 	model = trainAndEval(model=DecisionTreeClassifier(max_depth=10), X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
 	# Plot decisiton tree into PDF file.
 	dot_data = StringIO()
