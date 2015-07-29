@@ -11,8 +11,7 @@ def scatter(xs, ys, labels):
 		ax.annotate(label, (x, y))
 	plt.show()
 
-def scatter_color(xs, ys, labels, colors, areas):
-	fig = plt.figure()
+def scatter_color(xs, ys, labels, colors, areas, fig=plt.figure()):
 	plt.subplots_adjust(bottom = 0.1)
 	plt.scatter(
 	    xs, ys, marker='o', c=colors, s=areas,
@@ -28,33 +27,38 @@ def scatter_color(xs, ys, labels, colors, areas):
 	        bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
 	        arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
 
-	plt.show()
-
-def generateWordCloud(list_word_freq):
+def generateWordCloud(list_word_freq, fig=plt.figure()):
 	wordcloud = WordCloud(width=1200, height=1000, background_color='white', stopwords=STOPWORDS)
 	wordcloud.generate_from_frequencies(list_word_freq)
 	plt.imshow(wordcloud)
 	plt.axis('off')
-	plt.show()
 
-def generateScatterPlot(df):
-	selected_index = random.sample(df.index, 100)
+def generateScatterPlot(df, fig=plt.figure()):
+	num_words = len(df.index)
+	selected_index = range(10) + range(num_words-10, num_words) + random.sample(df.index[10:-10], 80)
 	df = df.ix[selected_index]
 
-	xs = df.word_count_all.tolist()
-	ys = df.word_count_top.tolist()
+	xs = df.word_prob_all.tolist()
+	ys = df.word_prob_top.tolist()
 	labels = df.word.tolist()
 	# scatter(xs, ys, labels)
-	scatter_color(xs, ys, labels, np.random.rand(len(xs)), df.word_count_all.tolist())
+	scatter_color(xs, ys, labels, np.random.rand(len(xs)), df.word_count_all.tolist(), fig)
 
 def main():
-	df = pd.read_csv("word_count_nyc_filtered.csv")
+	df = pd.read_csv("top_100_keywords_filtered.csv")
 	print df.head()
-	generateScatterPlot(df)	
+	fig = plt.figure(1)
+	generateScatterPlot(df, fig)
 	
-	words = df.word.tolist()
-	counts = df.word_count_all.tolist()
-	generateWordCloud([(word, count) for (word, count) in zip(words, counts)])
+	df_nyc = pd.read_csv("word_count_nyc_filtered.csv")
+	df_sfo = pd.read_csv("word_count_sfo_filtered.csv")	
+	for idx, df in enumerate([df_nyc, df_sfo]):
+		fig = plt.figure(idx + 2)
+		words = df.word.tolist()
+		counts = df.word_count_all.tolist()
+		generateWordCloud([(word, count) for (word, count) in zip(words, counts)], fig)
+
+	plt.show()
 	
 if __name__ == "__main__":
     main()
