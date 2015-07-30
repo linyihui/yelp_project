@@ -1,4 +1,4 @@
-# Yelp Project
+# Snippetite: From Reviews to Actionable Insights
 Many consumer-facing websites, like Yelp and Amazon, have collected tons of customer reviews. While these reviews can be useful for resource for the platform and end users, most of them are unstructured and not actionable. This is an ongoing project that aims to extract keywords from reviews, analyze their correlation with popularity, and turn review text into actionable insights.
 
 ## Overview
