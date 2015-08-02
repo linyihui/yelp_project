@@ -110,12 +110,11 @@ def createTrainingTestSets(df, training_set_ratio):
 
 def main():
   # ========================================================
-  # Analyze correlation between keyword & popularity
+  # Analyze correlation between keyword & popularity.
   # ========================================================
 
   df = readDataFrameFromSql()
   # df = readDataFrameFromJson()
-
   df = df[pd.notnull(df['snippet_text'])]
 
   # Load Stopwords list from nltk package.
@@ -135,9 +134,8 @@ def main():
   word_count_df = pd.DataFrame(word_count_table)
   word_count_df.to_csv(OUTPUT_KEYWORDS_FILE, encoding='utf-8')
 
-
   # ========================================================
-  # Predicting highly-rated restaurant using snippet words
+  # Predicting highly-rated restaurant using snippet words.
   # ========================================================
 
   # Add a column "label"
@@ -148,9 +146,17 @@ def main():
 
   # Create text features from training set.
   vectorizer = TfidfVectorizer(min_df=0.01, stop_words='english') 
-  X_train = vectorizer.fit_transform(df_train['snippet_text'])
+  # Transform snippet_text into tf-idf vectors.
+  X_train = vectorizer.fit_transform(df_train['snippet_text']).toarray()
   print 'Vocabulary of bag-of-word vector:', vectorizer.get_feature_names()
-  X_test =  vectorizer.transform(df_test['snippet_text'])
+  # Add review_count feature to X_train.
+  X_train = np.hstack((X_train, np.expand_dims(df_train['review_count'].as_matrix(), 1)))
+  
+  # Transform snippet_text into tf-idf vectors.
+  X_test =  vectorizer.transform(df_test['snippet_text']).toarray()
+  # Add review_count feature to X_test.
+  X_test = np.hstack((X_test, np.expand_dims(df_test['review_count'].as_matrix(), 1)))
+
   y_train = df_train['label']
   y_test = df_test['label']
 
