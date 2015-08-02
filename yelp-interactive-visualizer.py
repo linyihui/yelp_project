@@ -2,8 +2,8 @@ import json
 import numpy as np
 import pandas as pd
 import plotly.plotly as py
-import us_states
 from plotly.graph_objs import *
+import us_states
 from os import listdir
 from os.path import isfile, join
 
@@ -30,12 +30,13 @@ def readDataFrameFromJson():
 
 def plotReviewStatsByStates():
   try: 
-    df = pd.read_csv('review_stats_by_states.csv')
+    df = pd.read_csv('review_count_stats_by_states.csv')
   except:
     df_restaurants = readDataFrameFromJson()
     df_restaurants['state_code'] = pd.Series([location['state_code'] for location in df_restaurants['location']])
-    df = pd.DataFrame(df_restaurants.groupby(by=['state_code'])['review_count'].mean().round(2).reset_index())
-    df.to_csv('review_stats_by_states.csv', encoding='utf-8')  
+    g = df_restaurants.groupby(by=['state_code'])['review_count']
+    df = pd.DataFrame(g.describe().round(2).unstack(level=-1)).reset_index()
+    df.to_csv('review_count_stats_by_states.csv', encoding='utf-8')
 
   df = df.ix[[code in set(us_states.state_code_to_name.keys()) for code in df['state_code']]].reset_index(drop=True)
   df['state_name'] = pd.Series([us_states.state_code_to_name[code] for code in df['state_code']])
@@ -43,7 +44,12 @@ def plotReviewStatsByStates():
   
   for col in df.columns:
     df[col] = df[col].astype(str)            
-  df['text'] = df['state_name'] + ' ' + 'Mean Review Count: ' + df['review_count']
+  df['text'] = '<b>' + df['state_name'] + '</b><br>' \
+                  + 'Review Count Stats' + '<br>' \
+                  + 'Mean: ' + df['mean'] + '<br>' \
+                  + 'Std: ' + df['std'] + '<br>' \
+                  + 'Median: ' + df['50%'] + '<br>' \
+                  + 'Max: ' + df['max']
 
   scl = [[0.0, 'rgb(242,240,247)'],[0.2, 'rgb(218,218,235)'],[0.4, 'rgb(188,189,220)'],\
             [0.6, 'rgb(158,154,200)'],[0.8, 'rgb(117,107,177)'],[1.0, 'rgb(84,39,143)']]
@@ -52,7 +58,7 @@ def plotReviewStatsByStates():
         colorscale = scl,
         autocolorscale = False,
         locations = df['state_code'],
-        z = df['review_count'].astype(float),
+        z = df['mean'].astype(float),
         locationmode = 'USA-states',
         text = df['text'],
         marker = dict(
@@ -62,11 +68,11 @@ def plotReviewStatsByStates():
             )
         ),
         colorbar = dict(
-            title = "Number of Reviews"
+            title = "Average Number of Reviews"
         )
     ) ]
   layout = dict(
-          title = 'Yelp Restaurant Review Stats by State (Hover for breakdown)',
+          title = 'Yelp Restaurant Review Count Stats by State (Hover for breakdown)',
           geo = dict(
               scope='usa',
               projection=dict( type='albers usa' ),
@@ -75,7 +81,7 @@ def plotReviewStatsByStates():
           ),
       )
   fig = dict( data=data, layout=layout )
-  url = py.plot( fig, validate=False, filename='d3-cloropleth-map' )
+  url = py.plot( fig, validate=False, filename='yelp-review-stats-by-us-states' )
 
 def plotClassifierResults():
   classifiers = ['Logistic Regression', 'Decision Tree']
@@ -111,7 +117,7 @@ def plotClassifierResults():
 
 def main():
   plotReviewStatsByStates()
-  plotClassifierResults()
+  # plotClassifierResults()
 
 
 if __name__ == "__main__":
